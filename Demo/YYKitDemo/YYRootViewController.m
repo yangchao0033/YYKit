@@ -25,9 +25,10 @@
     [self addCell:@"Image" class:@"YYImageExample"];
     [self addCell:@"Text" class:@"YYTextExample"];
     [self addCell:@"Feed List Demo" class:@"YYFeedListExample"];
+    NSString *str = [UIDevice currentDevice].machineModel.copy;
+    NSLog(@"%@", str);
+//    [self log];
     [self.tableView reloadData];
-    
-    //[self log];
 }
 
 - (void)log {
@@ -67,11 +68,13 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSString *className = self.classNames[indexPath.row];
     Class class = NSClassFromString(className);
+    /** 通过事先用数组存储好的类创建控制器，降低代码的冗余性，提高代码的可复用性和可读性 */
     if (class) {
         UIViewController *ctrl = class.new;
         ctrl.title = _titles[indexPath.row];
         [self.navigationController pushViewController:ctrl animated:YES];
     }
+    /** 动画取消cell点击 */
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 

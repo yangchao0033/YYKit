@@ -22,6 +22,7 @@
 @end
 
 static void SimpleObjectExample() {
+    /** json字符串转模型 */
     YYBook *book = [YYBook modelWithJSON:@"     \
     {                                           \
        \"name\": \"Harry Potter\",              \
