@@ -49,6 +49,7 @@
      }
  
      ********************** Coding/Copying/hash/equal *********************
+    归档、拷贝、hash、eaual
      @interface YYShadow :NSObject <NSCoding, NSCopying>
      @property (nonatomic, copy) NSString *name;
      @property (nonatomic, assign) CGSize size;
@@ -67,26 +68,27 @@
 
 /**
  Creates and returns a new instance of the receiver from a json.
- This method is thread-safe.
+ This method is thread-safe. -------------------------------------> 通过json创建并返回一个本类型的实例对象
  
- @param json  A json object in `NSDictionary`, `NSString` or `NSData`.
  
- @return A new instance created from the json, or nil if an error occurs.
+ @param json  A json object in `NSDictionary`, `NSString` or `NSData`. -> json 一个json对象可以是NSDictionary，NSString或者NSData类型
+ 
+ @return A new instance created from the json, or nil if an error occurs.-> 一个新有json对象转化的新的实例
  */
 + (instancetype)modelWithJSON:(id)json;
 
 /**
- Creates and returns a new instance of the receiver from a key-value dictionary.
+ Creates and returns a new instance of the receiver from a key-value dictionary.-> 通过键-值字典创建并返回一个本类的实例对象，线程安全
  This method is thread-safe.
  
- @param dictionary  A key-value dictionary mapped to the instance's properties.
- Any invalid key-value pair in dictionary will be ignored.
+ @param dictionary  A key-value dictionary mapped to the instance's properties.-> 一个用来映射对象实例属性的键-值字典，
+ Any invalid key-value pair in dictionary will be ignored.-> 任何无效的键值对字典将会被遗忘
  
- @return A new instance created from the dictionary, or nil if an error occurs.
+ @return A new instance created from the dictionary, or nil if an error occurs.-> 返回一个由字典生成的实例对象
  
- @discussion The key in `dictionary` will mapped to the reciever's property name,
- and the value will set to the property. If the value's type does not match the
- property, this method will try to convert the value based on these rules:
+ @discussion The key in `dictionary` will mapped to the reciever's property name,-> 字典的键（key）将被映射为接受者（类对象）的属性名
+ and the value will set to the property. If the value's type does not match the -> 并且值（value）将被设置到属性上，如果值的类型和属性类型不匹配，该方法的转换
+ property, this method will try to convert the value based on these rules:-> 将会尝试基于以下规则去转化
  
      `NSString` or `NSNumber` -> c number, such as BOOL, int, long, float, NSUInteger...
      `NSString` -> NSDate, parsed with format "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
@@ -97,12 +99,12 @@
 + (instancetype)modelWithDictionary:(NSDictionary *)dictionary;
 
 /**
- Set the receiver's properties with a json object.
+ Set the receiver's properties with a json object. -> j用json对象的初始化一个模型的属性值
  
- @discussion Any invalid data in json will be ignored.
+ @discussion Any invalid data in json will be ignored. -> 不合法的数据将会被忽略
  
  @param json  A json object of `NSDictionary`, `NSString` or `NSData`, mapped to the
- receiver's properties.
+ receiver's properties. 
  
  @return Whether succeed.
  */
