@@ -69,7 +69,13 @@ static void NestObjectExample() {
         } \
     }"];
     NSString *repoJSON = [repo modelToJSONString];
-    NSLog(@"Repo: %@", repoJSON);
+    NSDictionary *jsonObject = [repo modelToJSONObject];
+    NSLog(@"%tu", [jsonObject isMemberOfClass:[NSDictionary class]]);
+    /** 
+     此处必须用kind不用member，应为实际产生的对象类型为字典类簇中NSDictionary的一个子类，否则无法进行判断
+     */
+    NSLog(@"%tu", [jsonObject isKindOfClass:[NSDictionary class]]);
+    NSLog(@"Repo: %@ jsonObj: %@", repoJSON, jsonObject[@"createTime"]);
 }
 
 
@@ -122,6 +128,14 @@ static void ContainerObjectExample() {
     \"likedUserIds\" : [10001,10002]                    \
     }"];
     NSString *albumJSON = [album modelToJSONString];
+//    id dict = [album modelToJSONObject];
+//    if ([dict isMemberOfClass:[NSDictionary class]]) {
+//        NSLog(@"dict is NSDict");
+//    } else if ([dict isMemberOfClass:[NSArray class]]) {
+//        NSLog(@"dict is NSArr");
+//    } else {
+//        NSLog(@"dict is ? ");
+//    }
     NSLog(@"Album: %@", albumJSON);
 }
 

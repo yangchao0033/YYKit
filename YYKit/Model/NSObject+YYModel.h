@@ -112,13 +112,16 @@
 
 /**
  Set the receiver's properties with a key-value dictionary.
+ -> 用字典设置接收对象的属性
  
  @param dic  A key-value dictionary mapped to the receiver's properties.
  Any invalid key-value pair in dictionary will be ignored.
+ -> 用来映射属性的字典任何不合法的键值对字典将会被忽略
  
  @discussion The key in `dictionary` will mapped to the reciever's property name,
  and the value will set to the property. If the value's type doesn't match the
  property, this method will try to convert the value based on these rules:
+ -> 字典键类型与属性类型不匹配时转换规则如下：
  
      `NSString`, `NSNumber` -> c number, such as BOOL, int, long, float, NSUInteger...
      `NSString` -> NSDate, parsed with format "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
@@ -132,9 +135,11 @@
 
 /**
  Generate a json object from the receiver's properties.
+ -> 用调用者的对象属性生成一个json对象
  
  @return A json object in `NSDictionary` or `NSArray`, or nil if an error occurs.
  See [NSJSONSerialization isValidJSONObject] for more information.
+ -> 通过接受者模型对象返回一个json对象（字典或者数组）或者nil当出错时，
  
  @discussion Any of the invalid property is ignored.
  If the reciver is `NSArray`, `NSDictionary` or `NSSet`, it just convert
@@ -144,8 +149,10 @@
 
 /**
  Generate a json string's data from the receiver's properties.
+ -> 通过调用对象生成一个json的NSData对象
  
  @return A json string's data, or nil if an error occurs.
+ -> 返回一个json字符串的data二进制数据
  
  @discussion Any of the invalid property is ignored.
  If the reciver is `NSArray`, `NSDictionary` or `NSSet`, it will also convert the 

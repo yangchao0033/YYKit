@@ -567,6 +567,7 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
 }
 
 /// Returns the cached model class meta
+/** 返回当前类的metaClass */
 + (instancetype)metaWithClass:(Class)cls {
     if (!cls) return nil;
     static CFMutableDictionaryRef cache;
@@ -1099,44 +1100,61 @@ static void ModelSetWithPropertyMetaArrayFunction(const void *_propertyMeta, voi
 /**
  Returns a valid JSON object (NSArray/NSDictionary/NSString/NSNumber/NSNull), 
  or nil if an error occurs.
+ -> 返回一个合法的json对象(NSArray/NSDictionary/NSString/NSNumber/NSNull)
  
  @param model Model, can be nil.
  @return JSON object, nil if an error occurs.
  */
 static id ModelToJSONObjectRecursive(NSObject *model) {
+    /** 判断如果是空或为系统自带基本类型（即json的最基本的支持的数据类型）则返回原模型，不做转换 */
     if (!model || model == (id)kCFNull) return model;
     if ([model isKindOfClass:[NSString class]]) return model;
     if ([model isKindOfClass:[NSNumber class]]) return model;
+    /** 字典类型模型处理 */
     if ([model isKindOfClass:[NSDictionary class]]) {
+        /** 使用系统方法判断模型是否为合法的json模型，说明不用转换，返回即可 */
         if ([NSJSONSerialization isValidJSONObject:model]) return model;
         NSMutableDictionary *newDic = [NSMutableDictionary new];
         [((NSDictionary *)model) enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
             NSString *stringKey = [key isKindOfClass:[NSString class]] ? key : key.description;
             if (!stringKey) return;
+            /** 对遍历出的value进行迭代，产生合法的json对象 */
             id jsonObj = ModelToJSONObjectRecursive(obj);
+            /** 返回空对象 */
             if (!jsonObj) jsonObj = (id)kCFNull;
+            /** 对遍历出的key进行值的自定义分配 */
             newDic[stringKey] = jsonObj;
         }];
+        /** 返回重构的json结构字典 */
         return newDic;
     }
+    /** NSSet类型模型处理 */
     if ([model isKindOfClass:[NSSet class]]) {
+        /** set -> array */
         NSArray *array = ((NSSet *)model).allObjects;
+        /** 数组满足json对象，返回数组 */
         if ([NSJSONSerialization isValidJSONObject:array]) return array;
+        /** 否则，构造自己的数组 */
         NSMutableArray *newArray = [NSMutableArray new];
         for (id obj in array) {
+            /** json串中支持的数据类型直接添加，否则进行迭代判断拆解 */
             if ([obj isKindOfClass:[NSString class]] || [obj isKindOfClass:[NSNumber class]]) {
                 [newArray addObject:obj];
             } else {
                 id jsonObj = ModelToJSONObjectRecursive(obj);
+                /** 迭代出的json对象不为空则添加进数组 */
                 if (jsonObj && jsonObj != (id)kCFNull) [newArray addObject:jsonObj];
             }
         }
         return newArray;
     }
+    /** 处理数组类型的模型 */
     if ([model isKindOfClass:[NSArray class]]) {
+        /** 判断模型是否合法，合法则停止迭代转换 */
         if ([NSJSONSerialization isValidJSONObject:model]) return model;
         NSMutableArray *newArray = [NSMutableArray new];
         for (id obj in (NSArray *)model) {
+            /** 遇到json基础类型直接加，否则继续迭代 */
             if ([obj isKindOfClass:[NSString class]] || [obj isKindOfClass:[NSNumber class]]) {
                 [newArray addObject:obj];
             } else {
@@ -1146,9 +1164,12 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
         }
         return newArray;
     }
+    /** 将所有其他基本数据类型转换为字符串 */
     if ([model isKindOfClass:[NSURL class]]) return ((NSURL *)model).absoluteString;
     if ([model isKindOfClass:[NSAttributedString class]]) return ((NSAttributedString *)model).string;
+    /** 统一日期输出格式 */
     if ([model isKindOfClass:[NSDate class]]) return [YYISODateFormatter() stringFromDate:(id)model];
+    /** 二进制格式不予转换 */
     if ([model isKindOfClass:[NSData class]]) return nil;
     
     
@@ -1318,8 +1339,13 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
      All objects are instances of NSString, NSNumber, NSArray, NSDictionary, or NSNull.
      All dictionary keys are instances of NSString.
      Numbers are not NaN or infinity.
+     -> 苹果说：
+     最高层的对象是一个NSArray或者一个NSDictionary
+     所有对象都是NSString, NSNumber, NSArray, NSDictionary, or NSNull的实例对象
+     所有字典的键都是NSString类型
      */
     id jsonObject = ModelToJSONObjectRecursive(self);
+    /** 如果转换后的json对象不是数组或者字典，则说明转换失败，返回nil */
     if ([jsonObject isKindOfClass:[NSArray class]]) return jsonObject;
     if ([jsonObject isKindOfClass:[NSDictionary class]]) return jsonObject;
     return nil;
