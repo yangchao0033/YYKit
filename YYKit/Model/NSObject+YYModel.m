@@ -427,7 +427,9 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
 @end
 
 @implementation _YYModelMeta
+/** 获取元类模型对象 */
 - (instancetype)initWithClass:(Class)cls {
+    /** 查询类信息到模型中 */
     YYClassInfo *classInfo = [YYClassInfo classInfoWithClass:cls];
     if (!classInfo) return nil;
     self = [super init];
@@ -570,6 +572,7 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
 /** 返回当前类的metaClass */
 + (instancetype)metaWithClass:(Class)cls {
     if (!cls) return nil;
+    /** core fundation的可变字典 */
     static CFMutableDictionaryRef cache;
     static dispatch_once_t onceToken;
     static OSSpinLock lock;
@@ -577,6 +580,7 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
         cache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         lock = OS_SPINLOCK_INIT;
     });
+    /** 优化后的线程加锁 */
     OSSpinLockLock(&lock);
     _YYModelMeta *meta = CFDictionaryGetValue(cache, (__bridge const void *)(cls));
     OSSpinLockUnlock(&lock);
@@ -1172,11 +1176,12 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
     /** 二进制格式不予转换 */
     if ([model isKindOfClass:[NSData class]]) return nil;
     
-    
+    /** 获取模型的元类，用来存储所有元类模型需要的一切信息 */
     _YYModelMeta *modelMeta = [_YYModelMeta metaWithClass:[model class]];
     if (!modelMeta || modelMeta->_keyMappedCount == 0) return nil;
     NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithCapacity:64];
     __unsafe_unretained NSMutableDictionary *dic = result; // avoid retain and release in block
+    /** 遍历元属性模型 */
     [modelMeta->_mapper enumerateKeysAndObjectsUsingBlock:^(NSString *propertyMappedKey, _YYModelPropertyMeta *propertyMeta, BOOL *stop) {
         if (!propertyMeta->_getter) return;
         

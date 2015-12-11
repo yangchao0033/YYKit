@@ -78,6 +78,7 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding);
  Instance variable information.
  */
 @interface YYClassIvarInfo : NSObject
+/** 描述实例变量指针 */
 @property (nonatomic, assign, readonly) Ivar ivar;
 @property (nonatomic, strong, readonly) NSString *name; ///< Ivar's name
 @property (nonatomic, assign, readonly) ptrdiff_t offset; ///< Ivar's offset
@@ -104,7 +105,7 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding);
  Property information.
  */
 @interface YYClassPropertyInfo : NSObject
-@property (nonatomic, assign, readonly) objc_property_t property;
+@property (nonatomic, assign, readonly) objc_property_t property; ///< 运行时中用来描述对象属性
 @property (nonatomic, strong, readonly) NSString *name; ///< property's name
 @property (nonatomic, assign, readonly) YYEncodingType type; ///< property's type
 @property (nonatomic, strong, readonly) NSString *typeEncoding; ///< property's encoding value
@@ -126,9 +127,11 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding);
 @property (nonatomic, assign, readonly) BOOL isMeta;
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) YYClassInfo *superClassInfo;
-
+/** 变量信息 */
 @property (nonatomic, strong, readonly) NSDictionary *ivarInfos;     ///< key:NSString(ivar),     value:YYClassIvarInfo
+/** 方法信息 */
 @property (nonatomic, strong, readonly) NSDictionary *methodInfos;   ///< key:NSString(selector), value:YYClassMethodInfo
+/** 属性信息 */
 @property (nonatomic, strong, readonly) NSDictionary *propertyInfos; ///< key:NSString(property), value:YYClassPropertyInfo
 
 /**
@@ -136,15 +139,21 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding);
  'class_addMethod()'), you should call this method to refresh the class info cache.
  
  After called this method, you may call 'classInfoWithClass' or 
- 'classInfoWithClassName' to get the updated class info.
+ 'classInfoWithClassName' to get the updated class info.’
+ 
+ 当类方式变化时，比如使用runtime动态对类添加方法后，需要使用该方法刷新类信息缓存
+ 当该方法调用完，需要手动调用类信息查询接口进行查询
+ 
  */
 - (void)setNeedUpdate;
 
 /**
  Get the class info of a specified Class.
+ -》通过指定的类获取类信息
  
  @discussion This method will cache the class info and super-class info
  at the first access to the Class. This method is thread-safe.
+ -》该方法将会缓存当前类和超类的类信息在第一次访问类时，并且线程安全
  
  @param cls A class.
  @return A class info, or nil if an error occurs.
