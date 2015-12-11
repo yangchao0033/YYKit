@@ -304,10 +304,12 @@
 
 /**
  The generic class mapper for container properties.
+-》 利用字典自定义模型转换的映射关系
  
  @discussion If the property is a container object, such as NSArray/NSSet/NSDictionary,
  implements this method and returns a property->class mapper, tells which kind of 
  object will be add to the array/set/dictionary.
+ -》 如果属性是一个容器对象，实现这个方法可以返回一个属性和所属类的映射关系，告诉模型容器中应该存放什么样的对象
  
   Example:
         @class YYShadow, YYBorder, YYAttachment;
@@ -335,9 +337,13 @@
  If you need to create instances of different classes during json->object transform,
  use the method to choose custom class based on dictionary data.
  
+ 如果你在json转对象的同时需要创建不同的类实例，可以使用该方法去使用字典来选择你的数据的自定义数据类型
+ 
  @discussion If the model implements this method, it will be called to determine resulting class
  during `+modelWithJSON:`, `+modelWithDictionary:`, conveting object of properties of parent objects 
  (both singular and containers via `+modelContainerPropertyGenericClass`).
+ 
+ 如果模型实现此方法，他将被调用来决定`+modelWithJSON:`, `+modelWithDictionary:`这两个方法转换属性对象的父对象，包括单个对象和容器对象取决于`+modelContainerPropertyGenericClass`
  
  Example:
         @class YYCircle, YYRectangle, YYLine;

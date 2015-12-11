@@ -1288,7 +1288,10 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
     if (![dictionary isKindOfClass:[NSDictionary class]]) return nil;
     
     Class cls = [self class];
+    /** 获取元类 */
     _YYModelMeta *modelMeta = [_YYModelMeta metaWithClass:cls];
+    /** 非属性不恩能够使用点语法 */
+    /** 如果有来自字典的自定义类 */
     if (modelMeta->_hasCustomClassFromDictionary) {
         cls = [cls modelCustomClassForDictionary:dictionary] ?: cls;
     }
