@@ -1263,11 +1263,14 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
     if ([json isKindOfClass:[NSDictionary class]]) {
         dic = json;
     } else if ([json isKindOfClass:[NSString class]]) {
+        /** 属于json字符串时，转换为二进制数据 */
         jsonData = [(NSString *)json dataUsingEncoding : NSUTF8StringEncoding];
     } else if ([json isKindOfClass:[NSData class]]) {
         jsonData = json;
     }
+    /** 如果为二进制数据 */
     if (jsonData) {
+        /** 使用系统自带方法对二进制数据进行字典反解 */
         dic = [NSJSONSerialization JSONObjectWithData:jsonData options:kNilOptions error:NULL];
         if (![dic isKindOfClass:[NSDictionary class]]) dic = nil;
     }
@@ -1275,6 +1278,7 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
 }
 
 + (instancetype)modelWithJSON:(id)json {
+    /** 转字典后转模型 */
     NSDictionary *dic = [self _yy_dictionaryWithJSON:json];
     return [self modelWithDictionary:dic];
 }

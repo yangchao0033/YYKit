@@ -264,37 +264,46 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding) {
     _cls = cls;
     _superCls = class_getSuperclass(cls);
     _isMeta = class_isMetaClass(cls);
-    /** 为元类赋值 */
+    /** 如果不属于元类则获取元类 */
     if (!_isMeta) {
         _metaCls = objc_getMetaClass(class_getName(cls));
     }
     _name = NSStringFromClass(cls);
+    /** 构建类信息属性模型 */
     [self _update];
-    /** 递归产生超类类信息 */
+    /** 递归到父类产生超类类信息 */
     _superClassInfo = [self.class classInfoWithClass:_superCls];
     return self;
 }
 /** 更新 */
 - (void)_update {
+    /** 置空所有信息模型 */
     _ivarInfos = nil;
     _methodInfos = nil;
     _propertyInfos = nil;
     
+    /** 遍历所有类信息并重构类信息属性 */
     Class cls = self.cls;
     unsigned int methodCount = 0;
+    /** 通过class获取实例方法数组和数量 */
     Method *methods = class_copyMethodList(cls, &methodCount);
     if (methods) {
+        /** 存储方法信息 */
         NSMutableDictionary *methodInfos = [NSMutableDictionary new];
         _methodInfos = methodInfos;
         for (unsigned int i = 0; i < methodCount; i++) {
+            /** 遍历method数组，构建method模型 */
             YYClassMethodInfo *info = [[YYClassMethodInfo alloc] initWithMethod:methods[i]];
+            /** 将方法模型存储到字典对应名键值中 */
             if (info.name) methodInfos[info.name] = info;
         }
         free(methods);
     }
     unsigned int propertyCount = 0;
+   /** 同上，获取属性列表 */
     objc_property_t *properties = class_copyPropertyList(cls, &propertyCount);
     if (properties) {
+        /** 将属性模型信息存储到当前类的属性中 */
         NSMutableDictionary *propertyInfos = [NSMutableDictionary new];
         _propertyInfos = propertyInfos;
         for (unsigned int i = 0; i < propertyCount; i++) {
@@ -304,6 +313,7 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding) {
         free(properties);
     }
     
+    /** 获取实例变量 */
     unsigned int ivarCount = 0;
     Ivar *ivars = class_copyIvarList(cls, &ivarCount);
     if (ivars) {
@@ -315,34 +325,44 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding) {
         }
         free(ivars);
     }
+    /** 设置是否需要更新为no */
     _needUpdate = NO;
 }
 
+/** 设置为需要更新 */
 - (void)setNeedUpdate {
     _needUpdate = YES;
 }
 
+/** 获取类信息描述模型 */
 + (instancetype)classInfoWithClass:(Class)cls {
     if (!cls) return nil;
     static CFMutableDictionaryRef classCache;
     static CFMutableDictionaryRef metaCache;
     static dispatch_once_t onceToken;
+    /** 增加线程安全 */
     static OSSpinLock lock;
     dispatch_once(&onceToken, ^{
+        /** 创建可变字典 */
         classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         lock = OS_SPINLOCK_INIT;
     });
     OSSpinLockLock(&lock);
+    /** 如果是元类，则将其记录为元类信息缓存，否则取出之前的缓存信息 */
+    /** 类似于objectForKey:  第一个参数为字典，参数二：key */
     YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
+    /** 如果记录标志需要更新，则调用更新 */
     if (info && info->_needUpdate) {
         [info _update];
     }
     OSSpinLockUnlock(&lock);
+    /** 初始化info */
     if (!info) {
         info = [[YYClassInfo alloc] initWithClass:cls];
         if (info) {
             OSSpinLockLock(&lock);
+            /** 初始化类缓存或者元类缓存 类似于setValueForKey: */
             CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
             OSSpinLockUnlock(&lock);
         }
