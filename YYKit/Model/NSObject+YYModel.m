@@ -130,11 +130,32 @@ static force_inline NSNumber *YYNSNumberCreateFromID(__unsafe_unretained id valu
              用 法： double atof(const char *nptr); 
              */
             double num = atof(cstring);
+            /** 
+             返回一个 Boolean 值，指明提供的值是否是保留值 NaN （不是数字）。
+             NaN 即 Not a Number
+             isNaN(numValue)
+             必选项 numvalue 参数为要检查是否为 NAN 的值。
+             说明
+             假如值是 NaN， 那么 isNaN 函数返回 true ，否则返回 false。 使用这个函数的典型情况是检查 parseInt 和 parseFloat 方法的输入值。
+             还有一种办法，变量可以与它自身进行比较。 假如比较的结果不等，那么它就是 NaN 。 这是因为 NaN 是唯一与自身不等的值。
+             函数名称： isinf
+             函数功能： 判断数组的元素是否是无界的（比如， 无穷大、无穷小）。
+             语法格式：
+             TF = isinf(A)
+             返回一个和A尺寸一样的数组， 如果A中某个元素是inf， 则对应TF中元素是1， 否则TF中对应元素是0。
+
+             */
             if (isnan(num) || isinf(num)) return nil;
             return @(num);
-        } else {
+        } else { /** 如果不存在“.” */
             const char *cstring = ((NSString *)value).UTF8String;
             if (!cstring) return nil;
+            /** 
+             函数名: atoll
+             功 能: 把字符串转换成长长整型数（64位）
+             用 法: long long atoll(const char *nptr);
+             注:unix下可用，与atol、atoi等类似
+             */
             return @(atoll(cstring));
         }
     }
@@ -290,18 +311,30 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
 
 
 /// A property info in object model.
+/** 对象模型中属性的信息的内部类 */
 @interface _YYModelPropertyMeta : NSObject {
     @package
+    //    属性名
     NSString *_name;             ///< property's name
+    //    属性C语言类型
     YYEncodingType _type;        ///< property's type
+    //    属性OC中Foundation框架中的类型（NS...）
     YYEncodingNSType _nsType;    ///< property's Foundation type
+    //    是否是C语言数字
     BOOL _isCNumber;             ///< is c number type
+    //    属性类对象
     Class _cls;                  ///< property's class, or nil
+    //    容器泛型类，如果么有容器泛型类为nil
     Class _genericCls;           ///< container's generic class, or nil if threr's no generic class
+    /** getter方法 */
     SEL _getter;                 ///< getter, or nil if the instances cannot respond
+    /** setter方法 */
     SEL _setter;                 ///< setter, or nil if the instances cannot respond
+    /** 是否能通过KVC访问 */
     BOOL _isKVCCompatible;       ///< YES if it can access with key-value coding
+    /** 结构是否支持归档 */
     BOOL _isStructAvailableForKeyedArchiver; ///< YES if the struct can encoded with keyed archiver/unarchiver
+    /** 判断类或通用类中实现了+modelCustomClassForDictionary:方法的 */
     BOOL _hasCustomClassFromDictionary; ///< class/generic class implements +modelCustomClassForDictionary:
     
     /*
@@ -309,10 +342,15 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
      property->keyPath:   _mappedToKey:keyPath _mappedToKeyPath:keyPath(array) _mappedToKeyArray:nil
      property->keys:      _mappedToKey:keys[0] _mappedToKeyPath:nil/keyPath    _mappedToKeyArray:keys(array)
      */
+    /** 属性中映射的键 */
     NSString *_mappedToKey;      ///< the key mapped to
+    /** 属性中映射的键路径 */
     NSArray *_mappedToKeyPath;   ///< the key path mapped to (nil if the name is not key path)
+    /** 属性中映射的数组 */
     NSArray *_mappedToKeyArray;  ///< the key(NSString) or keyPath(NSArray) array (nil if not mapped to multiple keys)
+    /** 属性类的信息 */
     YYClassPropertyInfo *_info;  ///< property's info
+    /** 下一个元 如果存在多个属性映射为同一个键 */
     _YYModelPropertyMeta *_next; ///< next meta if there are multiple properties mapped to the same key.
 }
 @end
@@ -743,7 +781,9 @@ static void ModelSetValueForProperty(__unsafe_unretained id model,
                                      __unsafe_unretained _YYModelPropertyMeta *meta) {
     /** 如果属性元是c数字 */
     if (meta->_isCNumber) {
+        /** 执行函数获取oc的NSNumber对象 */
         NSNumber *num = YYNSNumberCreateFromID(value);
+        /** <#name#> */
         ModelSetNumberToProperty(model, num, meta);
         if (num) [num class]; // hold the number
     } else if (meta->_nsType) {
