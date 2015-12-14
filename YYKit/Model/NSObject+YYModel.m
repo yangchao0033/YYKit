@@ -77,6 +77,7 @@ static force_inline BOOL YYEncodingTypeIsCNumber(YYEncodingType type) {
 }
 
 /// Parse a number value from 'id'.
+/** 解析一个来自id类型的数字，对其进行必要的重构 */
 static force_inline NSNumber *YYNSNumberCreateFromID(__unsafe_unretained id value) {
     static NSCharacterSet *dot;
     static NSDictionary *dic;
@@ -350,7 +351,7 @@ static force_inline id YYValueForMultiKeys(__unsafe_unretained NSDictionary *dic
     NSArray *_mappedToKeyArray;  ///< the key(NSString) or keyPath(NSArray) array (nil if not mapped to multiple keys)
     /** 属性类的信息 */
     YYClassPropertyInfo *_info;  ///< property's info
-    /** 下一个元 如果存在多个属性映射为同一个键 */
+    /** 下一个元 如果存在多个属性映射为同一个键l */
     _YYModelPropertyMeta *_next; ///< next meta if there are multiple properties mapped to the same key.
 }
 @end
@@ -779,33 +780,44 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 static void ModelSetValueForProperty(__unsafe_unretained id model,
                                      __unsafe_unretained id value,
                                      __unsafe_unretained _YYModelPropertyMeta *meta) {
-    /** 如果属性元是c数字 */
+    /** 如果属性元类型是c数字 */
     if (meta->_isCNumber) {
         /** 执行函数获取oc的NSNumber对象 */
         NSNumber *num = YYNSNumberCreateFromID(value);
-        /** <#name#> */
+        /** 设置Number对象到模型属性 */
         ModelSetNumberToProperty(model, num, meta);
+        /** 保留num，延长其周期 */
         if (num) [num class]; // hold the number
+    /** 如果属性元是foundation框架的基本类型 */
     } else if (meta->_nsType) {
+        /** 如果为null，设置属性为nil */
         if (value == (id)kCFNull) {
             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, (id)nil);
         } else {
             switch (meta->_nsType) {
+                    /** 处理元类为字符串类型 */
                 case YYEncodingTypeNSString:
                 case YYEncodingTypeNSMutableString: {
+                    /** 值为字符串类型 */
                     if ([value isKindOfClass:[NSString class]]) {
                         if (meta->_nsType == YYEncodingTypeNSString) {
+                            /** 不可变直接发送消息赋值 */
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);
                         } else {
+                            /** 属性为可变类型则对其进行可变copy */
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, ((NSString *)value).mutableCopy);
                         }
+                        /** 处理元类型为字符串，值为num类型，对value进行相应地处理 */
                     } else if ([value isKindOfClass:[NSNumber class]]) {
+                        /** 同上，可变给可变字符串不可变给不可变字符串，通过num对象的stringValue获取字符串 */
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model,
                                                                        meta->_setter,
                                                                        (meta->_nsType == YYEncodingTypeNSString) ?
                                                                        ((NSNumber *)value).stringValue :
                                                                        ((NSNumber *)value).stringValue.mutableCopy);
+                        /** 处理元类为字符串，值为二进制data */
                     } else if ([value isKindOfClass:[NSData class]]) {
+                        /** 从data数据中解析出可变字符串 */
                         NSMutableString *string = [[NSMutableString alloc] initWithData:value encoding:NSUTF8StringEncoding];
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, string);
                     } else if ([value isKindOfClass:[NSURL class]]) {
