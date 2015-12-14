@@ -721,6 +721,7 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 
 /**
  Set value to model with a property meta.
+ 用属性元设置value值给模型
  
  @discussion Caller should hold strong reference to the parameters before this function returns.
  
@@ -731,6 +732,7 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 static void ModelSetValueForProperty(__unsafe_unretained id model,
                                      __unsafe_unretained id value,
                                      __unsafe_unretained _YYModelPropertyMeta *meta) {
+    /** 如果属性元是c数字 */
     if (meta->_isCNumber) {
         NSNumber *num = YYNSNumberCreateFromID(value);
         ModelSetNumberToProperty(model, num, meta);
@@ -1056,6 +1058,7 @@ typedef struct {
 
 /**
  Apply function for dictionary, to set the key-value pair to model.
+ 应用于字典的函数，用来设置键值对到模型中去
  
  @param _key     should not be nil, NSString.
  @param _value   should not be nil.
@@ -1076,6 +1079,7 @@ static void ModelSetWithDictionaryFunction(const void *_key, const void *_value,
 
 /**
  Apply function for model property meta, to set dictionary to model.
+ 
  
  @param _propertyMeta should not be nil, _YYModelPropertyMeta.
  @param _context      _context.model and _context.dictionary should not be nil.
@@ -1310,13 +1314,14 @@ static id ModelToJSONObjectRecursive(NSObject *model) {
     if (!dic || dic == (id)kCFNull) return NO;
     if (![dic isKindOfClass:[NSDictionary class]]) return NO;
     
+    
     _YYModelMeta *modelMeta = [_YYModelMeta metaWithClass:object_getClass(self)];
     if (modelMeta->_keyMappedCount == 0) return NO;
     ModelSetContext context = {0};
     context.modelMeta = (__bridge void *)(modelMeta);
     context.model = (__bridge void *)(self);
     context.dictionary = (__bridge void *)(dic);
-    
+    /**  */
     if (modelMeta->_keyMappedCount >= CFDictionaryGetCount((CFDictionaryRef)dic)) {
         CFDictionaryApplyFunction((CFDictionaryRef)dic, ModelSetWithDictionaryFunction, &context);
         if (modelMeta->_keyPathPropertyMetas) {
