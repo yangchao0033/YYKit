@@ -77,7 +77,7 @@ static force_inline BOOL YYEncodingTypeIsCNumber(YYEncodingType type) {
 }
 
 /// Parse a number value from 'id'.
-/** 解析一个来自id类型的数字，对其进行必要的重构 */
+/** 解析一个来自id类型的数字，对其进行必要的重构，吧各种各样的值处理为数字 */
 static force_inline NSNumber *YYNSNumberCreateFromID(__unsafe_unretained id value) {
     static NSCharacterSet *dot;
     static NSDictionary *dic;
@@ -780,6 +780,7 @@ static force_inline void ModelSetNumberToProperty(__unsafe_unretained id model,
 static void ModelSetValueForProperty(__unsafe_unretained id model,
                                      __unsafe_unretained id value,
                                      __unsafe_unretained _YYModelPropertyMeta *meta) {
+#pragma mark property meta CNumber
     /** 如果属性元类型是c数字 */
     if (meta->_isCNumber) {
         /** 执行函数获取oc的NSNumber对象 */
@@ -791,10 +792,12 @@ static void ModelSetValueForProperty(__unsafe_unretained id model,
     /** 如果属性元是foundation框架的基本类型 */
     } else if (meta->_nsType) {
         /** 如果为null，设置属性为nil */
+#pragma mark property meta NULL
         if (value == (id)kCFNull) {
             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, (id)nil);
         } else {
             switch (meta->_nsType) {
+#pragma mark property meta String
                     /** 处理元类为字符串类型 */
                 case YYEncodingTypeNSString:
                 case YYEncodingTypeNSMutableString: {
@@ -820,12 +823,15 @@ static void ModelSetValueForProperty(__unsafe_unretained id model,
                         /** 从data数据中解析出可变字符串 */
                         NSMutableString *string = [[NSMutableString alloc] initWithData:value encoding:NSUTF8StringEncoding];
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, string);
+                        /** 处理元类为字符串，值为url */
                     } else if ([value isKindOfClass:[NSURL class]]) {
+                        /** 取出绝对string */
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model,
                                                                        meta->_setter,
                                                                        (meta->_nsType == YYEncodingTypeNSString) ?
                                                                        ((NSURL *)value).absoluteString :
                                                                        ((NSURL *)value).absoluteString.mutableCopy);
+                        /** 处理元类型为字符串，值为属性字符串 */
                     } else if ([value isKindOfClass:[NSAttributedString class]]) {
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model,
                                                                        meta->_setter,
@@ -834,64 +840,86 @@ static void ModelSetValueForProperty(__unsafe_unretained id model,
                                                                        ((NSAttributedString *)value).string.mutableCopy);
                     }
                 } break;
-                    
+#pragma mark property meta Value
+                /** 属性元类型为NSValue、NSNumber、NSDecimalNumber */
                 case YYEncodingTypeNSValue:
                 case YYEncodingTypeNSNumber:
                 case YYEncodingTypeNSDecimalNumber: {
+                    /** 属性类型为NSNumber */
                     if (meta->_nsType == YYEncodingTypeNSNumber) {
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, YYNSNumberCreateFromID(value));
+                        
                     } else if (meta->_nsType == YYEncodingTypeNSDecimalNumber) {
+                        /** 属性类型和value类型一致为NSDecimalNumber */
                         if ([value isKindOfClass:[NSDecimalNumber class]]) {
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);
+                            /** value为Number */
                         } else if ([value isKindOfClass:[NSNumber class]]) {
+                            /** 转为decimal对象之后直接调用set方法 */
                             NSDecimalNumber *decNum = [NSDecimalNumber decimalNumberWithDecimal:[((NSNumber *)value) decimalValue]];
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, decNum);
+                            /** value字符串 */
                         } else if ([value isKindOfClass:[NSString class]]) {
+                            /** 获取decimal对象 */
                             NSDecimalNumber *decNum = [NSDecimalNumber decimalNumberWithString:value];
                             NSDecimal dec = decNum.decimalValue;
-                            if (dec._length == 0 && dec._isNegative) {
+                            /** 值过滤，如果为is not number（NaN） */
+                            if (dec._length == 0 && dec._isNegative) {// length == 0 && isNegative -> NaN
                                 decNum = nil; // NaN
                             }
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, decNum);
                         }
+                        /** value是value */
                     } else { // YYEncodingTypeNSValue
                         if ([value isKindOfClass:[NSValue class]]) {
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);
                         }
                     }
                 } break;
-                    
+                   /** 属性元为二进制data或可变data */
                 case YYEncodingTypeNSData:
                 case YYEncodingTypeNSMutableData: {
+                    /** value为data或其子类 */
                     if ([value isKindOfClass:[NSData class]]) {
+                        /** 并且属性元为data，直接set */
                         if (meta->_nsType == YYEncodingTypeNSData) {
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);
                         } else {
+                            /** 属性元为可变data需转换 */
                             NSMutableData *data = ((NSData *)value).mutableCopy;
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, data);
                         }
+                        /** 
+                         *   value为可变String
+                         */
                     } else if ([value isKindOfClass:[NSString class]]) {
+                        /** 转为data */
                         NSData *data = [(NSString *)value dataUsingEncoding:NSUTF8StringEncoding];
+                        /** 元类型可变则需要处理 */
                         if (meta->_nsType == YYEncodingTypeNSMutableData) {
                             data = ((NSData *)data).mutableCopy;
                         }
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, data);
                     }
                 } break;
-                    
+                    /** 属性元类为日期类型 */
                 case YYEncodingTypeNSDate: {
-                    if ([value isKindOfClass:[NSDate class]]) {
+                    if ([value isKindOfClass:[NSDate class]]) {                                         // value为date
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);
-                    } else if ([value isKindOfClass:[NSString class]]) {
+                    } else if ([value isKindOfClass:[NSString class]]) {                                // value为字符串
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, YYNSDateFromString(value));
                     }
                 } break;
-                    
+                    /** 属性元为NSURL */
                 case YYEncodingTypeNSURL: {
+                    /** value为NSURL */
                     if ([value isKindOfClass:[NSURL class]]) {
                         ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, value);
+                        /** value为字符串 */
                     } else if ([value isKindOfClass:[NSString class]]) {
+                        /** 返回一个Unicode的字符集 */
                         NSCharacterSet *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+                        /** 通过字符集拿到字符串 */
                         NSString *str = [value stringByTrimmingCharactersInSet:set];
                         if (str.length == 0) {
                             ((void (*)(id, SEL, id))(void *) objc_msgSend)((id)model, meta->_setter, nil);
