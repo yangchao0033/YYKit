@@ -89,6 +89,7 @@
 //    self.window.backgroundColor = [UIColor grayColor];
 //    [self.window makeKeyAndVisible];
     YYRootViewController *root1 = [YYRootViewController new];
+    /** 使用自定义的导航栏view时使用此方法 */
     YYExampleNavController *nav1 = [[YYExampleNavController alloc] initWithNavigationBarClass:[YYExampleNavBar class] toolbarClass:[UIToolbar class]];
     if ([nav1 respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
         /** 
