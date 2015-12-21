@@ -20,6 +20,7 @@
 
 @interface WBStatusTimelineViewController () <UITableViewDelegate, UITableViewDataSource, WBStatusCellDelegate>
 @property (nonatomic, strong) UITableView *tableView;
+/** 布局数组 */
 @property (nonatomic, strong) NSMutableArray *layouts;
 @property (nonatomic, strong) YYFPSLabel *fpsLabel;
 @end
@@ -28,6 +29,7 @@
 
 - (instancetype)init {
     self = [super init];
+    /** 初始化数据 */
     _tableView = [YYTableView new];
     _tableView.delegate = self;
     _tableView.dataSource = self;
@@ -37,37 +39,49 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    /** 关闭导航栏自动调整scrollView内边距 */
     if ([self respondsToSelector:@selector( setAutomaticallyAdjustsScrollViewInsets:)]) {
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
+    
     
     UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithImage:[WBStatusHelper imageNamed:@"toolbar_compose_highlighted"] style:UIBarButtonItemStylePlain target:self action:@selector(sendStatus)];
     rightItem.tintColor = UIColorHex(fd8224);
     self.navigationItem.rightBarButtonItem = rightItem;
     
     _tableView.frame = self.view.bounds;
+    /** 手动调整导航栏位置 */
     _tableView.contentInset = UIEdgeInsetsMake(64, 0, 0, 0);
+    /** 手动调整滚动条内边距 */
     _tableView.scrollIndicatorInsets = _tableView.contentInset;
     _tableView.backgroundColor = [UIColor clearColor];
     _tableView.backgroundView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:_tableView];
     self.view.backgroundColor = kWBCellBackgroundColor;
     
+    /** 创建FPS显示条 */
     _fpsLabel = [YYFPSLabel new];
+    /** 
+     *  默认会走sizeThatSize,设置固定宽高
+     */
     [_fpsLabel sizeToFit];
+    
+    
     _fpsLabel.bottom = self.view.height - kWBCellPadding;
     _fpsLabel.left = kWBCellPadding;
     _fpsLabel.alpha = 0;
     [self.view addSubview:_fpsLabel];
     
+    /** 适配iOS6 */
     if (kSystemVersion < 7) {
         _fpsLabel.top -= 44;
-        _tableView.top -= 64;
-        _tableView.height += 20;
+        _tableView.top -= 64;   // iOS6从状态栏开始算y 原点 0 table的顶部也是从nav的底部算0
+        _tableView.height += 20;    //  
     }
     
     
     self.navigationController.view.userInteractionEnabled = NO;
+    /** 加载loading框 */
     UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
     indicator.size = CGSizeMake(80, 80);
     indicator.center = CGPointMake(self.view.width / 2, self.view.height / 2);
@@ -77,12 +91,15 @@
     [indicator startAnimating];
     [self.view addSubview:indicator];
     
+    /** 异步加载微博数据并转换为模型 */
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         for (int i = 0; i <= 7; i++) {
             NSData *data = [NSData dataNamed:[NSString stringWithFormat:@"weibo_%d.json",i]];
             WBTimelineItem *item = [WBTimelineItem modelWithJSON:data];
             for (WBStatus *status in item.statuses) {
+                /** 微博数据排版对象 */
                 WBStatusLayout *layout = [[WBStatusLayout alloc] initWithStatus:status style:WBLayoutStyleTimeline];
+                /** 通过对象进行排版 */
                 [layout layout];
                 [_layouts addObject:layout];
             }
@@ -91,21 +108,30 @@
         // 复制一下，让列表长一些，不至于滑两下就到底了
         [_layouts addObjectsFromArray:_layouts];
         
+
         dispatch_async(dispatch_get_main_queue(), ^{
             self.title = [NSString stringWithFormat:@"Weibo (loaded:%d)", (int)_layouts.count];;
             [indicator removeFromSuperview];
+            /** 加载完成后打开交互 */
             self.navigationController.view.userInteractionEnabled = YES;
             [_tableView reloadData];
         });
     });
 }
 
+/** 发送微博 */
 - (void)sendStatus {
+    /** 调出发送控制器 */
     WBStatusComposeViewController *vc = [WBStatusComposeViewController new];
     vc.type = WBStatusComposeViewTypeStatus;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     @weakify(nav);
+    /**
+     *  此处是为了让包了导航栏的控制器
+     *  在自己的子控制器里也可以dismiss
+     */
     vc.dismiss = ^{
+        /** 防止被释放，防止被析构 */
         @strongify(nav);
         [nav dismissViewControllerAnimated:YES completion:NULL];
     };
@@ -113,6 +139,7 @@
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    /** 当发生滚动时，让fps标签动画显示出来 */
     if (_fpsLabel.alpha == 0) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 1;
@@ -121,6 +148,7 @@
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    /** 当scrollView停止拽动时并且减速停止时，隐藏fbs */
     if (!decelerate) {
         if (_fpsLabel.alpha != 0) {
             [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
@@ -131,6 +159,7 @@
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    /** 当scrollview开始减速时，显示fps */
     if (_fpsLabel.alpha != 0) {
         [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 0;
@@ -138,6 +167,7 @@
     }
 }
 
+/** 点击状态栏的时候调用，哈哈哈 */
 - (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView {
     if (_fpsLabel.alpha == 0) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{

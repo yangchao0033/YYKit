@@ -13,6 +13,7 @@
 
 /**
  A proxy used to hold a weak object.
+ 用于定时器上target，避免产生循环引用
  It can be used to avoid retain cycles, such as the target in NSTimer or CADisplayLink.
  
  sample code:

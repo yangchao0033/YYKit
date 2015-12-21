@@ -12,6 +12,7 @@
 #define kSize CGSizeMake(55, 20)
 
 @implementation YYFPSLabel {
+    /** 计时器 */
     CADisplayLink *_link;
     NSUInteger _count;
     NSTimeInterval _lastTime;
@@ -27,12 +28,14 @@
     }
     self = [super initWithFrame:frame];
     
+    /** 圆角 */
     self.layer.cornerRadius = 5;
     self.clipsToBounds = YES;
     self.textAlignment = NSTextAlignmentCenter;
     self.userInteractionEnabled = NO;
     self.backgroundColor = [UIColor colorWithWhite:0.000 alpha:0.700];
     
+    /** 使用css创建lable的字体 */
     _font = [UIFont fontWithName:@"Menlo" size:14];
     if (_font) {
         _subFont = [UIFont fontWithName:@"Menlo" size:4];
@@ -41,19 +44,23 @@
         _subFont = [UIFont fontWithName:@"Courier" size:4];
     }
     
+    /** 使用弱代理设置并启动计时器 */
     _link = [CADisplayLink displayLinkWithTarget:[YYWeakProxy proxyWithTarget:self] selector:@selector(tick:)];
     [_link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
     return self;
 }
 
 - (void)dealloc {
+    /** 销毁定时器 */
     [_link invalidate];
 }
 
+/** 根据文档解释，该方法可以设置view的默认尺寸，防止sizeToFit进行修改 */
 - (CGSize)sizeThatFits:(CGSize)size {
     return kSize;
 }
 
+/** 监视事件 */
 - (void)tick:(CADisplayLink *)link {
     if (_lastTime == 0) {
         _lastTime = link.timestamp;

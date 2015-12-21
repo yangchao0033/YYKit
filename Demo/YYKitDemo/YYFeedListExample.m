@@ -32,6 +32,17 @@
     [self.tableView reloadData];
 }
 
+/*!
+ *  @author 杨超, 15-12-18 16:12:42
+ *
+ *  @brief 配置静态cell到tableview中
+ *
+ *  @param title     cell的标题
+ *  @param className cell要跳转的控制器类字符串
+ *  @param imageName cell要显示的图片
+ *
+ *  @since <#version number#>
+ */
 - (void)addCell:(NSString *)title class:(NSString *)className image:(NSString *)imageName {
     [self.titles addObject:title];
     [self.classNames addObject:className];

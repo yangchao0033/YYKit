@@ -126,6 +126,8 @@ YY_EXTERN_C_BEGIN
 
 /**
  Synthsize a weak or strong reference.
+    
+ 聚合一个weak或者strong引用
  
  Example:
     @weakify(self)

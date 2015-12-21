@@ -95,6 +95,7 @@
 
 @implementation WBStatusLayout
 
+/** 通过微博数据进行排版 */
 - (instancetype)initWithStatus:(WBStatus *)status style:(WBLayoutStyle)style {
     if (!status || !status.user) return nil;
     self = [super init];
