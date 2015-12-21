@@ -189,6 +189,7 @@
         cell = [[WBStatusCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
         cell.delegate = self;
     }
+    /** 设置数据源 */
     [cell setLayout:_layouts[indexPath.row]];
     return cell;
 }
@@ -271,7 +272,8 @@
 /// 点击了赞
 - (void)cellDidClickLike:(WBStatusCell *)cell {
     WBStatus *status = cell.statusView.layout.status;
-    [cell.statusView.toolbarView setLiked:!status.attitudesStatus withAnimation:YES];
+//    [cell.statusView.toolbarView setLiked:!status.attitudesStatus withAnimation:YES];
+    [cell.statusView.toolbarView setLiked:!status.attitudesStatus withAnimation:NO];
 }
 
 /// 点击了用户
@@ -284,6 +286,7 @@
 
 /// 点击了图片
 - (void)cell:(WBStatusCell *)cell didClickImageAtIndex:(NSUInteger)index {
+    /** 记录点击的图片 */
     UIImageView *fromView = nil;
     NSMutableArray *items = [NSMutableArray new];
     WBStatus *status = cell.statusView.layout.status;

@@ -13,6 +13,7 @@
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     for (UIView *view in self.subviews) {
+        /** 抓到scrollView，并移除iOS7的触摸延迟 */
         if([view isKindOfClass:[UIScrollView class]]) {
             ((UIScrollView *)view).delaysContentTouches = NO; // Remove touch delay for iOS 7
             break;
