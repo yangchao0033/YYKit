@@ -23,17 +23,20 @@
 /**
  Get pre-defined attributes from attributed string.
  All properties defined in UIKit, CoreText and YYText are included.
+ 用来做属性字符串预定义的，所有属性来自于UIKit，CoreText 和YYText
  */
 @interface NSAttributedString (YYText)
 
 /**
  Archive the string to data.
+ 字符串归档为二进制数据
  @return Returns nil if an error occurs.
  */
 - (NSData *)archiveToData;
 
 /**
  Unarchive string from data.
+ 解档
  @param data  The archived attributed string data.
  @return Returns nil if an error occurs.
  */
@@ -48,10 +51,12 @@
 
 /**
  Returns the attributes at first charactor.
+ 存放属性字符串信息
  */
 @property (nonatomic, copy, readonly) NSDictionary *attributes;
 
 /**
+ 返回索引所在的属性字符串字典信息
  Returns the attributes for the character at a given index.
  
  @discussion Raises an `NSRangeException` if index lies beyond the end of the 
@@ -65,6 +70,7 @@
 - (NSDictionary *)attributesAtIndex:(NSUInteger)index;
 
 /**
+ 返回特定位置的属性字典中特定key的值
  Returns the value for an attribute with a given name of the character at a given index.
  
  @discussion Raises an `NSRangeException` if index lies beyond the end of the
@@ -81,6 +87,7 @@
 
 
 #pragma mark - Get character attribute as property
+/** 以属性的形式获取属性字符的属性 */
 ///=============================================================================
 /// @name Get character attribute as property
 ///=============================================================================
@@ -90,13 +97,16 @@
  
  @discussion Default is Helvetica (Neue) 12.
  @discussion Get this property returns the first character's attribute.
+ 获取属性字符的第一个字符的富文本属性字体
  @since CoreText:3.2  UIKit:6.0  YYKit:6.0
  */
 @property (nonatomic, strong, readonly) UIFont *font;
+/** 获取特定位置的属性字符串的字体font */
 - (UIFont *)fontAtIndex:(NSUInteger)index;
 
 /**
  A kerning adjustment. (read-only)
+ 字与字之间的间距
  
  @discussion Default is standard kerning. The kerning attribute indicate how many 
  points the following character should be shifted from its default offset as 
@@ -111,6 +121,7 @@
 - (NSNumber *)kernAtIndex:(NSUInteger)index;
 
 /**
+ 获取属性字符串的前景色
  The foreground color. (read-only)
  
  @discussion Default is Black.
@@ -121,6 +132,7 @@
 - (UIColor *)colorAtIndex:(NSUInteger)index;
 
 /**
+ 获取属性字符串的背景色
  The background color. (read-only)
  
  @discussion Default is nil (or no background).
@@ -131,6 +143,7 @@
 - (UIColor *)backgroundColorAtIndex:(NSUInteger)index;
 
 /**
+ 获取线条宽度
  The stroke width. (read-only)
  
  @discussion Default value is 0.0 (no stroke). This attribute, interpreted as
@@ -145,7 +158,7 @@
 
 /**
  The stroke color. (read-only)
- 
+ 获取线条颜色
  @discussion Default value is nil (same as foreground color).
  @discussion Get this property returns the first character's attribute.
  @since CoreText:3.2  UIKit:6.0
@@ -155,7 +168,7 @@
 
 /**
  The text shadow. (read-only)
- 
+ 获取文字阴影
  @discussion Default value is nil (no shadow).
  @discussion Get this property returns the first character's attribute.
  @since UIKit:6.0  YYKit:6.0
@@ -165,7 +178,7 @@
 
 /**
  The strikethrough style. (read-only)
- 
+ 获取删除线条样式
  @discussion Default value is NSUnderlineStyleNone (no strikethrough).
  @discussion Get this property returns the first character's attribute.
  @since UIKit:6.0
@@ -175,7 +188,7 @@
 
 /**
  The strikethrough color. (read-only)
- 
+ 删除线条颜色
  @discussion Default value is nil (same as foreground color).
  @discussion Get this property returns the first character's attribute.
  @since UIKit:7.0
@@ -185,7 +198,7 @@
 
 /**
  The underline style. (read-only)
- 
+ 获取下划线样式
  @discussion Default value is NSUnderlineStyleNone (no underline).
  @discussion Get this property returns the first character's attribute.
  @since CoreText:3.2  UIKit:6.0
@@ -195,7 +208,7 @@
 
 /**
  The underline color. (read-only)
- 
+ 获取下划线颜色
  @discussion Default value is nil (same as foreground color).
  @discussion Get this property returns the first character's attribute.
  @since CoreText:3.2  UIKit:7.0
@@ -205,7 +218,7 @@
 
 /**
  Ligature formation control. (read-only)
- 
+ 连体字控制
  @discussion Default is int value 1. The ligature attribute determines what kinds 
  of ligatures should be used when displaying the string. A value of 0 indicates 
  that only ligatures essential for proper rendering of text should be used, 
@@ -220,7 +233,7 @@
 
 /**
  The text effect. (read-only)
- 
+ 文字效果
  @discussion Default is nil (no effect). The only currently supported value
  is NSTextEffectLetterpressStyle.
  @discussion Get this property returns the first character's attribute.
@@ -231,7 +244,7 @@
 
 /**
  The skew to be applied to glyphs. (read-only)
- 
+ 斜体符号
  @discussion Default is 0 (no skew).
  @discussion Get this property returns the first character's attribute.
  @since UIKit:7.0
@@ -241,7 +254,7 @@
 
 /**
  The log of the expansion factor to be applied to glyphs. (read-only)
- 
+ 扩大效果的字体
  @discussion Default is 0 (no expansion).
  @discussion Get this property returns the first character's attribute.
  @since UIKit:7.0
@@ -251,7 +264,7 @@
 
 /**
  The character's offset from the baseline, in points. (read-only)
- 
+ 字符相对于基准线的偏移量
  @discussion Default is 0.
  @discussion Get this property returns the first character's attribute.
  @since UIKit:7.0
@@ -261,7 +274,10 @@
 
 /**
  Glyph orientation control. (read-only)
+ Glyph 字形：字符的图形表现形式
+ 字形方向控制
  
+ 默认为NO NO则代表为水平字形，YES为字形方向为垂直方向
  @discussion Default is NO. A value of NO indicates that horizontal glyph forms 
  are to be used, YES indicates that vertical glyph forms are to be used.
  @discussion Get this property returns the first character's attribute.
@@ -272,10 +288,11 @@
 
 /**
  Specifies text language. (read-only)
- 
+ 指定文字的语言
  @discussion Value must be a NSString containing a locale identifier. Default is 
  unset. When this attribute is set to a valid identifier, it will be used to select 
  localized glyphs (if supported by the font) and locale-specific line breaking rules.
+ 
  @discussion Get this property returns the first character's attribute.
  @since CoreText:7.0  YYKit:7.0
  */

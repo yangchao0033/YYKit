@@ -16,15 +16,22 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     __weak typeof(self) _self = self;
+    /** 打开调试界面 */
     [YYTextExampleHelper addDebugOptionToViewController:self];
     
+    /** 初始化容器字符串 */
     NSMutableAttributedString *text = [NSMutableAttributedString new];
     
     {
-        NSMutableAttributedString *one = [[NSMutableAttributedString alloc] initWithString:@"Shadow"];
+        /** 创建字符串 */
+        NSMutableAttributedString *one = [[NSMutableAttributedString alloc] initWithString:@"Shadow1111"];
+        /** 设置字体 */
         one.font = [UIFont boldSystemFontOfSize:30];
+        /** 设置颜色 */
         one.color = [UIColor whiteColor];
+        /** 创建阴影 */
         YYTextShadow *shadow = [YYTextShadow new];
+        one.verticalGlyphForm = YES;
         shadow.color = [UIColor colorWithWhite:0.000 alpha:0.490];
         shadow.offset = CGSizeMake(0, 1);
         shadow.radius = 5;
