@@ -100,7 +100,7 @@
                 /** 微博数据排版对象 */
                 WBStatusLayout *layout = [[WBStatusLayout alloc] initWithStatus:status style:WBLayoutStyleTimeline];
                 /** 通过对象进行排版 */
-                [layout layout];
+//                [layout layout];
                 [_layouts addObject:layout];
             }
         }
@@ -110,7 +110,7 @@
         
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.title = [NSString stringWithFormat:@"Weibo (loaded:%d)", (int)_layouts.count];;
+            self.title = [NSString stringWithFormat:@"Weibo (loaded:%d)", (int)_layouts.count];
             [indicator removeFromSuperview];
             /** 加载完成后打开交互 */
             self.navigationController.view.userInteractionEnabled = YES;

@@ -11,7 +11,6 @@
 
 #import "YYClassInfo.h"
 #import <objc/runtime.h>
-#import <libkern/OSAtomic.h>
 
 YYEncodingType YYEncodingGetType(const char *typeEncoding) {
     char *type = (char *)typeEncoding;
@@ -182,7 +181,7 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding) {
                 if (attrs[i].value) {
                     _typeEncoding = [NSString stringWithUTF8String:attrs[i].value];
                     type = YYEncodingGetType(attrs[i].value);
-                    if (type & YYEncodingTypeObject) {
+                    if ((type & YYEncodingTypeMask) == YYEncodingTypeObject) {
                         size_t len = strlen(attrs[i].value);
                         if (len > 3) {
                             char name[len - 2];
@@ -341,30 +340,37 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding) {
     static CFMutableDictionaryRef metaCache;
     static dispatch_once_t onceToken;
     /** 增加线程安全 */
-    static OSSpinLock lock;
+//    static OSSpinLock lock;
+    static dispatch_semaphore_t lock;
     dispatch_once(&onceToken, ^{
         /** 创建可变字典 */
         classCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         metaCache = CFDictionaryCreateMutable(CFAllocatorGetDefault(), 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        lock = OS_SPINLOCK_INIT;
+        lock = dispatch_semaphore_create(1);
     });
-    OSSpinLockLock(&lock);
+//    OSSpinLockLock(&lock);
     /** 如果是元类，则将其记录为元类信息缓存，否则取出之前的缓存信息 */
     /** 类似于objectForKey:  第一个参数为字典，参数二：key */
+    dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
     YYClassInfo *info = CFDictionaryGetValue(class_isMetaClass(cls) ? metaCache : classCache, (__bridge const void *)(cls));
     /** 如果记录标志需要更新，则调用更新 */
     if (info && info->_needUpdate) {
         [info _update];
     }
-    OSSpinLockUnlock(&lock);
-    /** 初始化info */
+//    OSSpinLockUnlock(&lock);
+//    /** 初始化info */
+//    if (!info) {
+//        info = [[YYClassInfo alloc] initWithClass:cls];
+//        if (info) {
+//            OSSpinLockLock(&lock);
+//            /** 初始化类缓存或者元类缓存 类似于setValueForKey: */
+    dispatch_semaphore_signal(lock);
     if (!info) {
         info = [[YYClassInfo alloc] initWithClass:cls];
         if (info) {
-            OSSpinLockLock(&lock);
-            /** 初始化类缓存或者元类缓存 类似于setValueForKey: */
+            dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
             CFDictionarySetValue(info.isMeta ? metaCache : classCache, (__bridge const void *)(cls), (__bridge const void *)(info));
-            OSSpinLockUnlock(&lock);
+            dispatch_semaphore_signal(lock);
         }
     }
     return info;
