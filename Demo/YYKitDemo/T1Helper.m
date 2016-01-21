@@ -40,9 +40,12 @@
     if (ext.length == 0) ext = @"png";
     NSString *path = [[self bundle] pathForScaledResource:name ofType:ext];
     if (!path) return nil;
+    /** 加载图片资源，无缓存 */
     image = [UIImage imageWithContentsOfFile:path];
+    /** 解码图片 */
     image = [image imageByDecoded];
     if (!image) return nil;
+    /** 加入缓存 */
     [[self imageCache] setObject:image forKey:name];
     return image;
 }

@@ -51,12 +51,15 @@
  Returns the full pathname for the resource identified by the specified name and 
  file extension. It first search the file with current screen's scale (such as @2x),
  then search from higher scale to lower scale.
+ 返回名字为name和扩展名的标记的资源的全路径名，他将会搜索当前屏幕的最高分辨率文件，例如@2x的图。然后从高往低依次搜索。
  
  @param name       The name of the resource file. If name is an empty string or 
  nil, returns the first file encountered of the supplied type.
+ 文件资源的名字，如果为空字符串则返回第一个该类型的文件。
  
  @param ext        If extension is an empty string or nil, the extension is 
  assumed not to exist and the file is the first file encountered that exactly matches name.
+ 如果扩展模式空字符串或nil，则扩展会被认定为不存在并且该文件会返回为第一个遇到的匹配到文件名的文件。
 
  
  @return The full pathname for the resource file or nil if the file could not be located.

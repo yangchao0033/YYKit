@@ -48,11 +48,15 @@
     if (image) return image;
     NSString *ext = name.pathExtension;
     if (ext.length == 0) ext = @"png";
+    /** 获取全路径 */
     NSString *path = [[self bundle] pathForScaledResource:name ofType:ext];
     if (!path) return nil;
+    /** 加载硬盘资源到内存 */
     image = [UIImage imageWithContentsOfFile:path];
+    /** 图片资源解码 */
     image = [image imageByDecoded];
     if (!image) return nil;
+    /** 做缓存 */
     [[self imageCache] setObject:image forKey:name];
     return image;
 }

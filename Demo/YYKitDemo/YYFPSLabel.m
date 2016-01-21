@@ -9,7 +9,7 @@
 #import "YYFPSLabel.h"
 #import "YYKit.h"
 
-#define kSize CGSizeMake(55, 20)
+#define kSize CGSizeMake(120, 20)
 
 @implementation YYFPSLabel {
     /** 计时器 */
@@ -63,6 +63,7 @@
 /** 监视事件 */
 - (void)tick:(CADisplayLink *)link {
     if (_lastTime == 0) {
+        /** timestamp用来记录上一帧播放的时间 */
         _lastTime = link.timestamp;
         return;
     }
@@ -76,8 +77,7 @@
     
     CGFloat progress = fps / 60.0;
     UIColor *color = [UIColor colorWithHue:0.27 * (progress - 0.2) saturation:1 brightness:0.9 alpha:1];
-    
-    NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%d FPS",(int)round(fps)]];
+    NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%f FPS", fps]];
     [text setColor:color range:NSMakeRange(0, text.length - 3)];
     [text setColor:[UIColor whiteColor] range:NSMakeRange(text.length - 3, 3)];
     text.font = _font;

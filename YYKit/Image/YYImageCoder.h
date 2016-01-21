@@ -317,7 +317,9 @@ typedef NS_ENUM(NSUInteger, YYImageBlendOperation) {
 
 /**
  Wherher the image can be display on screen without additional decoding.
+ 知否该图片可以不用额外的解码就在屏幕上显示
  @warning It just a hint for your code, change it has no other effect.
+ 警告：这仅仅只是一个提示，改变它不会有任何效果
  */
 @property (nonatomic, assign) BOOL isDecodedForDisplay;
 
@@ -366,6 +368,7 @@ CG_EXTERN NSString *YYImageTypeGetExtension(YYImageType type);
 
 
 /// Returns the shared DeviceRGB color space.
+/** 获取设备的颜色空间 */
 CG_EXTERN CGColorSpaceRef YYCGColorSpaceGetDeviceRGB();
 
 /// Returns the shared DeviceGray color space.
@@ -389,16 +392,19 @@ CG_EXTERN NSInteger YYUIImageOrientationToEXIFValue(UIImageOrientation orientati
 
 /**
  Create a decoded image.
+ 创建一个解码后的image
  
  @discussion If the source image is created from a compressed image data (such as
  PNG or JPEG), you can use this method to decode the image. After decoded, you can
  access the decoded bytes with CGImageGetDataProvider() and CGDataProviderCopyData()
  without additional decode process. If the image has already decoded, this method
  just copy the decoded bytes to the new image.
+ 如果源 image 是通过压缩后的 image data 创建的（例如PNG 或 JPEG格式），那你可以使用这个方法来解码image。解码后，你可以使用 CGImageGetDataProvider() 和 CGDataProviderCopyData()来访问这些解码后的数据为不用额外的解码过程。如果已经解码，这个方法仅仅只是copy新图的解码后的byte数据。
  
  @param imageRef          The source image.
  @param decodeForDisplay  If YES, this method will decode the image and convert
           it to BGRA8888 (premultiplied) or BGRX8888 format for CALayer display.
+ 如果为YES，这个方法将会解码image，并且将它转换为给 CALayer 显示的 BGRA8888（预乘）或者 BGRX8888 格式
  
  @return A decoded image, or NULL if an error occurs.
  */

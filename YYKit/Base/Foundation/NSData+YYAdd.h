@@ -296,6 +296,7 @@
 
 /**
  Create data from the file in main bundle (similar to [UIImage imageNamed:]).
+ 使用 main bundle 中的 file 创建 data 数据
  
  @param name The file name (in main bundle).
  

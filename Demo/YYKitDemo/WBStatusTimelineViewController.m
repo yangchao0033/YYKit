@@ -143,40 +143,55 @@
     if (_fpsLabel.alpha == 0) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 1;
+            NSLog(@"111111111111");
         } completion:NULL];
     }
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
-    /** 当scrollView停止拽动时并且减速停止时，隐藏fbs */
+    /** 当scrollView被认为的手动停止拽动停止时（此时不发生减速），隐藏fbs */
     if (!decelerate) {
         if (_fpsLabel.alpha != 0) {
             [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
                 _fpsLabel.alpha = 0;
+            NSLog(@"222222222222");
             } completion:NULL];
         }
     }
 }
 
+
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    /** 当scrollview开始减速时，显示fps */
+    /** 当scrollview已经减速时，影藏fps */
     if (_fpsLabel.alpha != 0) {
         [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 0;
+            NSLog(@"333333333");
         } completion:NULL];
     }
 }
 
 /** 点击状态栏的时候调用，哈哈哈 */
 - (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView {
-    if (_fpsLabel.alpha == 0) {
-        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-            _fpsLabel.alpha = 1;
-        } completion:^(BOOL finished) {
-        }];
+    if (_fpsLabel.alpha != 0) {
+        [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            _fpsLabel.alpha = 0;
+            NSLog(@"222222222222");
+        } completion:NULL];
     }
 }
 
+
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView {
+    if (_fpsLabel.alpha == 0) {
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            _fpsLabel.alpha = 1;
+            NSLog(@"44444444");
+        } completion:^(BOOL finished) {
+        }];
+    }
+    return YES;
+}
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return _layouts.count;

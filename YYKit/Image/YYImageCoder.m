@@ -868,6 +868,7 @@ CGImageRef YYCGImageCreateDecodedCopy(CGImageRef imageRef, BOOL decodeForDisplay
     if (width == 0 || height == 0) return NULL;
     
     if (decodeForDisplay) { //decode with redraw (may lose some precision)
+        /** 获取image通道的信息 */
         CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(imageRef) & kCGBitmapAlphaInfoMask;
         BOOL hasAlpha = NO;
         if (alphaInfo == kCGImageAlphaPremultipliedLast ||
@@ -878,32 +879,46 @@ CGImageRef YYCGImageCreateDecodedCopy(CGImageRef imageRef, BOOL decodeForDisplay
         }
         // BGRA8888 (premultiplied) or BGRX8888
         // same as UIGraphicsBeginImageContext() and -[UIView drawRect:]
+        /** 设置位图信息 */
         CGBitmapInfo bitmapInfo = kCGBitmapByteOrder32Host;
+        /** 或等于 */
         bitmapInfo |= hasAlpha ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
+        /** 通过图片尺寸，设备RGB空间，位图信息 创建上下文 */
         CGContextRef context = CGBitmapContextCreate(NULL, width, height, 8, 0, YYCGColorSpaceGetDeviceRGB(), bitmapInfo);
         if (!context) return NULL;
+        /** 通过上下文，尺寸，核心绘图对象，绘制image到上下文，图片是被拉伸的 */
+        /** 该步骤即为解码 */
         CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef); // decode
+        /** 通过上下文获取新的imageRef */
         CGImageRef newImage = CGBitmapContextCreateImage(context);
         CFRelease(context);
         return newImage;
         
-    } else {
+    } else {/** 利用另一种方式解码 */
         CGColorSpaceRef space = CGImageGetColorSpace(imageRef);
+        /** 获取每一个颜色的使用的bit位数 */
         size_t bitsPerComponent = CGImageGetBitsPerComponent(imageRef);
+        /** 获取每一个像素所用的bit位数 */
         size_t bitsPerPixel = CGImageGetBitsPerPixel(imageRef);
+        /** 获取每一排所用的bit位数 */
         size_t bytesPerRow = CGImageGetBytesPerRow(imageRef);
+        /** 获取bit图信息 */
         CGBitmapInfo bitmapInfo = CGImageGetBitmapInfo(imageRef);
         if (bytesPerRow == 0 || width == 0 || height == 0) return NULL;
         
+        /** 获取位图的 data 提供者，使用者有责任对他进行手动内存管理 */
         CGDataProviderRef dataProvider = CGImageGetDataProvider(imageRef);
         if (!dataProvider) return NULL;
+        /** 返回一个包含提供者数据copy的新对象 使用者有责任对他进行手动内存管理 */
         CFDataRef data = CGDataProviderCopyData(dataProvider); // decode
         if (!data) return NULL;
         
+        /** 通过新data创建新的提供者 */
         CGDataProviderRef newProvider = CGDataProviderCreateWithCFData(data);
         CFRelease(data);
         if (!newProvider) return NULL;
         
+        /** 通过前面图片信息，创建新图片 */
         CGImageRef newImage = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, space, bitmapInfo, newProvider, NULL, false, kCGRenderingIntentDefault);
         CFRelease(newProvider);
         return newImage;
@@ -2731,13 +2746,18 @@ CGImageRef YYCGImageCreateWithWebPData(CFDataRef webpData,
 
 - (instancetype)imageByDecoded {
     if (self.isDecodedForDisplay) return self;
+    /** 获取核心绘图的对象 */
     CGImageRef imageRef = self.CGImage;
     if (!imageRef) return self;
+    /** 其中YES参数是解码用于显示 */
     CGImageRef newImageRef = YYCGImageCreateDecodedCopy(imageRef, YES);
+    /** 说明不用解码 */
     if (!newImageRef) return self;
+    /** Orientation 取向定向，用来指示图片是怎么复合的 */
     UIImage *newImage = [[self.class alloc] initWithCGImage:newImageRef scale:self.scale orientation:self.imageOrientation];
     CGImageRelease(newImageRef);
     if (!newImage) newImage = self; // decode failed, return self.
+    /** 设置新图为不用额外解码就能显示 */
     newImage.isDecodedForDisplay = YES;
     return newImage;
 }
