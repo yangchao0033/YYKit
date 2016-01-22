@@ -143,7 +143,6 @@
     if (_fpsLabel.alpha == 0) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 1;
-            NSLog(@"111111111111");
         } completion:NULL];
     }
 }
@@ -154,7 +153,6 @@
         if (_fpsLabel.alpha != 0) {
             [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
                 _fpsLabel.alpha = 0;
-            NSLog(@"222222222222");
             } completion:NULL];
         }
     }
@@ -166,7 +164,6 @@
     if (_fpsLabel.alpha != 0) {
         [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 0;
-            NSLog(@"333333333");
         } completion:NULL];
     }
 }
@@ -176,7 +173,6 @@
     if (_fpsLabel.alpha != 0) {
         [UIView animateWithDuration:1 delay:2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 0;
-            NSLog(@"222222222222");
         } completion:NULL];
     }
 }
@@ -186,7 +182,6 @@
     if (_fpsLabel.alpha == 0) {
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             _fpsLabel.alpha = 1;
-            NSLog(@"44444444");
         } completion:^(BOOL finished) {
         }];
     }
@@ -322,7 +317,7 @@
     }
     
     YYPhotoGroupView *v = [[YYPhotoGroupView alloc] initWithGroupItems:items];
-    [v presentFromImageView:fromView toContainer:self.navigationController.view animated:YES completion:nil];
+    [v presentFromImageView:fromView toContainer:[UIApplication sharedApplication].keyWindow animated:YES completion:nil];
 }
 
 /// 点击了 Label 的链接

@@ -979,7 +979,13 @@
     [self.contentView addSubview:_statusView];
     return self;
 }
-
+/** - (void)prepareForReuse
+ Description
+ Prepares a reusable cell for reuse by the table view's delegate.
+ If a UITableViewCell object is reusable—that is, it has a reuse identifier—this method is invoked just before the object is returned from the UITableView method dequeueReusableCellWithIdentifier:. For performance reasons, you should only reset attributes of the cell that are not related to content, for example, alpha, editing, and selection state. The table view's delegate in tableView:cellForRowAtIndexPath: should always reset all content when reusing a cell. If the cell object does not have an associated reuse identifier, this method is not called. If you override this method, you must be sure to invoke the superclass implementation.
+ Availability	iOS (2.0 and later)
+ Declared In	UITableViewCell.h
+ Reference	UITableViewCell Class Reference */
 - (void)prepareForReuse {
     // ignore
 }

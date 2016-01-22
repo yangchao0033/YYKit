@@ -211,6 +211,7 @@
  A Boolean value indicating whether the layout and rendering codes are running
  asynchronously on background threads. 
  
+ 用来指定是否使用后台线程进行 布局 和 渲染的代码
  The default value is `NO`.
  */
 @property (nonatomic, assign) BOOL displaysAsynchronously;
@@ -240,6 +241,7 @@
 /**
  If the value is YES, then it will add a fade animation on layer when some range
  of text become highlighted. 
+ 默认值为YES，然后他将会在文字变为高亮时在 layer 添加一个淡入动画。
  
  The default value is `YES`.
  */
@@ -248,11 +250,15 @@
 /**
  Ignore common properties (such as text, font, textColor, attributedText...) and
  only use "textLayout" to display content. 
+忽略常用属性 比如 text font textColor
+ 只是用 textLayout 进行内容显示控制
  
- The default value is `NO`.
+ The default value is `NO`.默认值是不忽略
  
  @discussion If you control the label content only through "textLayout", then
  you may set this value to YES for higher performance.
+ 
+ 设置为忽略有助于获取更好的性能体验
  */
 @property (nonatomic, assign) BOOL ignoreCommonProperties;
 
